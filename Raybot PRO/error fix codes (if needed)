@@ -1,0 +1,417 @@
+✅ 1. OpenAI Authentication Error
+
+Error message
+
+openai.AuthenticationError: No API key provided
+
+✔ Fix
+
+import os
+os.environ["OPENAI_API_KEY"] = "your_api_key"
+
+from openai import OpenAI
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+
+---
+
+✅ 2. OpenAI "Bad Request" / 400 Error
+
+This happens when your prompt is too long or you send wrong JSON.
+
+Fix
+
+Use correct structure:
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role":"user","content":user_input}]
+)
+
+
+---
+
+✅ 3. Altair Renderer Error (MOST COMMON in Colab)
+
+Error
+
+RendererError: No such renderer: colab
+
+✔ Fix
+
+Add this BEFORE any altair chart:
+
+import altair as alt
+alt.renderers.enable('default')
+
+Or for PNG rendering:
+
+alt.renderers.set_embed_options(scaleFactor=2)
+
+
+---
+
+✅ 4. Gradio "Port already in use" Error
+
+Error
+
+Address already in use: 7860
+
+✔ Fix
+
+Kill previous Gradio processes:
+
+!fuser -k 7860/tcp
+
+Then launch:
+
+demo.launch(share=True)
+
+
+---
+
+✅ 5. ngrok not working (Tunnel not found)
+
+Error
+
+Tunnel 404 / ngrok stopped / connection refused
+
+✔ Fix
+
+Reconnect ngrok:
+
+from pyngrok import ngrok
+ngrok.kill()       # IMPORTANT
+public_url = ngrok.connect(7860)
+public_url
+
+
+---
+
+✅ 6. Colab Crashing / 504 Gateway Timeout
+
+Caused by:
+
+long-running OpenAI calls
+
+Colab sleeping
+
+cell execution stopping
+
+
+✔ Fix
+
+Keep server alive:
+
+while True:
+  pass
+
+Or use:
+
+demo.launch(share=True, server_port=7860)
+
+
+---
+
+✅ 7. Missing Folder Error ("No such file or directory")
+
+Error
+
+FileNotFoundError: ./agents not found
+
+✔ Fix
+
+Create folders:
+
+import os
+os.makedirs("agents", exist_ok=True)
+os.makedirs("assets", exist_ok=True)
+
+
+---
+
+✅ 8. JSON Decode Error
+
+Error
+
+JSONDecodeError: Expecting value
+
+Usually because OpenAI output isn’t in JSON.
+
+✔ Fix
+
+Force JSON format:
+
+messages=[
+  {"role":"system","content":"Return ONLY valid JSON"},
+  {"role":"user","content":prompt}
+]
+
+
+---
+
+✅ 9. Import Errors (common in Colab)
+
+Error
+
+ModuleNotFoundError: No module named 'python-dotenv'
+
+✔ Fix
+
+Install missing modules:
+
+!pip install python-dotenv altair openai gradio pyngrok
+
+
+---
+
+✅ 10. Rate Limit Error (OpenAI)
+
+Error
+
+RateLimitError: You exceeded your quota
+
+✔ Fix
+
+Add exponential retry:
+
+import time
+
+def retry_openai(fn):
+    for i in range(5):
+        try:
+            return fn()
+        except:
+            time.sleep(2*(i+1))
+            
+✅ 11. GRADIO — Common Problems & Fixes
+
+
+---
+
+❌ Problem 1: ImportError: No module named gradio
+
+✔ Fix
+
+!pip install gradio
+
+
+---
+
+❌ Problem 2: “Port 7860 already in use”
+
+✔ Fix
+
+!fuser -k 7860/tcp
+
+
+---
+
+❌ Problem 3: Gradio UI shows blank page / not loading
+
+✔ Fix
+
+demo.launch(share=True, server_name="0.0.0.0", server_port=7860)
+
+
+---
+
+❌ Problem 4: Gradio UI stuck at “Running…”
+
+✔ Fix Make sure last cell is not running infinite loops or using input().
+
+
+---
+
+❌ Problem 5: "404 ngrok tunnel not found"
+
+✔ Fix
+
+from pyngrok import ngrok
+ngrok.kill()
+ngrok.connect(7860)
+
+
+---
+
+
+---
+
+✅ 12. OPENAI — Common Problems & Fixes
+
+
+---
+
+❌ Problem 1: AuthenticationError: No API key provided
+
+✔ Fix
+
+import os
+os.environ["OPENAI_API_KEY"] = "your_api_key"
+
+
+---
+
+❌ Problem 2: “Bad Request / 400 Error”
+
+Usually because of wrong message format.
+
+✔ Fix
+
+from openai import OpenAI
+client = OpenAI()
+
+chat = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role":"user","content":"Hello"}]
+)
+
+
+---
+
+❌ Problem 3: "No such model"
+
+✔ Fix Use latest models:
+
+gpt-4o-mini
+gpt-4o
+gpt-4.1
+
+
+---
+
+❌ Problem 4: "Rate limit exceeded"
+
+✔ Fix
+
+import time
+
+def retry(fn):
+    for i in range(5):
+        try:
+            return fn()
+        except:
+            time.sleep(2*(i+1))
+
+
+---
+
+
+---
+
+✅13. ALTAIR — Common Problems & Fixes
+
+
+---
+
+❌ Problem 1: Renderer Error
+
+RendererError: No such renderer: colab
+
+✔ Fix
+
+import altair as alt
+alt.renderers.enable('default')
+
+
+---
+
+❌ Problem 2: ImportError: cannot import name TopLevelSpec
+
+This happens when Altair and Vegafusion version mismatch.
+
+✔ Fix
+
+!pip install -U altair vegafusion
+
+
+---
+
+❌ Problem 3: Altair chart not showing in Colab
+
+✔ Fix
+
+alt.renderers.set_embed_options(actions=False)
+
+
+---
+
+
+---
+
+✅ 14. WHISPER — Common Problems & Fixes
+
+
+---
+
+❌ Problem 1: whisper module not found
+
+✔ Fix
+
+!pip install -U openai-whisper
+
+
+---
+
+❌ Problem 2: Torch not installed
+
+✔ Fix
+
+!pip install torch torchvision torchaudio
+
+
+---
+
+❌ Problem 3: Slow transcription in Colab
+
+✔ Fix Force FP16:
+
+import whisper
+model = whisper.load_model("small", device="cuda")
+
+
+---
+
+❌ Problem 4: CUDA not available
+
+✔ Fix Use CPU:
+
+model = whisper.load_model("base", device="cpu")
+
+
+---
+
+
+---
+
+✅ 15. NUMPY — Common Problems & Fixes
+
+
+---
+
+❌ Problem 1: "Numpy version mismatch"
+
+Happens when installing Whisper or Altair.
+
+✔ Fix
+
+!pip install --upgrade numpy
+
+
+---
+
+❌ Problem 2: ImportError after upgrade
+
+✔ Fix Restart kernel:
+
+Runtime → Restart runtime
+
+
+---
+
+❌ Problem 3: Numpy showing strange warnings
+
+✔ Fix
+
+import warnings
+warnings.filterwarnings('ignore')
